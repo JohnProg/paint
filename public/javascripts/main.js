@@ -17,7 +17,7 @@
                 $inner = $('#inner-wrap');
 
             $('#nav-open-btn').on('click', function(e)                
-            {e.preventDefault();debugger
+            {e.preventDefault();
                 if (!nav_open) {
                     $inner.animate({ left: '15%' }, 300);
                     nav_open = true;

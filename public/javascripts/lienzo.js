@@ -1,49 +1,45 @@
 window.addEventListener('load', function(){ 
     socket = io();
+    socket.on('msg', function(data){
+        getParametersToDraw(data.x, data.y, data.color, data.size);
+    });
     init();
+
 }, false);
 
-var canvas, context, color, radio;
+var canvas, context, color, size;
 
- $('.colors > li > a').on('click', function(){
+function init(){
+    $('.colors > li > a').on('click', function(){
         var color = $(this).data('color');
         localStorage.color = color;
     });
- 
-function init(){
+    $('#maxValue').on('input', function(){
+        size = $(this).val();
+        localStorage.size = size;
+    }); 
 
-
-    var container = document.getElementById("container");
-    canvas = document.createElement("canvas");
+    canvas = document.getElementById("canvas");
     canvas.width = $(window).width();
     canvas.height = $(window).height();
-    container.appendChild(canvas);
-
     context = canvas.getContext("2d");
-    if(localStorage.color){
-        color = localStorage.color;
-    }
-    else{
-        color = "red";    
-    }
-
-    radio = document.getElementById("maxValue").value;
+    setValues();
     addListeners();
 }
 
-function sendParametersToDraw(x, y){
-    socket.emit('event_mouse', {x: x, y: y});
+function sendParametersToDraw(x, y, color, size){    
+    socket.emit('event_mouse', {x: x, y: y, color: color, size: size});
     socket.on('msg', function(data){
-        getParametersToDraw(data.x, data.y);
+        getParametersToDraw(data.x, data.y, data.color, data.size);
     });
 }
 
-function getParametersToDraw(x, y){
+function getParametersToDraw(x, y, color, size){
     context.beginPath();
     context.fillStyle = color;
-    var _radio = 1 + Math.ceil(Math.random() * radio);
-    var _desvX = 1 + Math.ceil(Math.random() * radio);
-    var _desvY = 1 + Math.ceil(Math.random() * radio);
+    var _radio = 1 + Math.ceil(Math.random() * size);
+    var _desvX = 1 + Math.ceil(Math.random() * size);
+    var _desvY = 1 + Math.ceil(Math.random() * size);
     context.arc(x + _desvX, y + _desvY, _radio, 0, Math.PI * 2);
     context.fill();
 }
@@ -54,14 +50,16 @@ function addListeners(){
 }
 
 function mouseDown(e){
+    setValues();
     canvas.addEventListener("mousemove", mouseMove, false);
     document.addEventListener("mouseup", mouseUp, false);
 
-    sendParametersToDraw(e.layerX, e.layerY);
+    sendParametersToDraw(e.layerX, e.layerY, color, size);
 }
 
 function mouseMove(e){
-    sendParametersToDraw(e.layerX, e.layerY);
+    setValues();
+    sendParametersToDraw(e.layerX, e.layerY, color, size);
 }
 
 function mouseUp(e){
@@ -77,7 +75,8 @@ function touchDown(e){
 }
 
 function touchMove(e){
-    sendParametersToDraw(e.layerX, e.layerY);
+    setValues();
+    sendParametersToDraw(e.layerX, e.layerY, color, size);
 }
 
 function touchUp(e){
@@ -85,3 +84,19 @@ function touchUp(e){
     document.removeEventListener("mouseup", mouseUp, false);
 }
 
+function setValues() {
+    
+    if(localStorage.color){
+        color = localStorage.color;
+    }
+    else{
+        color = "red";    
+    }
+
+    if(localStorage.size) {
+        size = localStorage.size;
+    }
+    else{
+        size = 10;
+    }
+ }
